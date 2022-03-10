@@ -1,10 +1,13 @@
 import 'dart:ui';
+import 'package:animations/animations.dart';
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
-
+import './ScreenItem.dart';
 import './screen_home.dart';
 import './screen_awards.dart';
+import './screen_log.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,9 +34,13 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           bottomAppBarColor: Colors.deepOrange),*/
         theme: FlexThemeData.light(scheme: FlexScheme.hippieBlue),
-        darkTheme: FlexThemeData.dark(scheme: FlexScheme.hippieBlue),
+        darkTheme: FlexThemeData.dark(scheme: FlexScheme.material),
         themeMode: ThemeMode.dark,
-        home: WelcomePage());
+        home: WelcomePage(),
+        routes: {
+          '/home': (BuildContext context) => ScreenHome(),
+          '/awards': (BuildContext context) => ScreenAwards()
+        });
   }
 }
 
@@ -149,16 +156,16 @@ class _WelcomePageState extends State<WelcomePage> {
   }
 }
 
-
 Route _createRoute(int index) {
-
   final List _screens = [
     {"screen": const ScreenHome(), "title": "Screen A Title"},
-    {"screen": const ScreenAwards(), "title": "Screen B Title"}
+    {"screen": const ScreenAwards(), "title": "Screen B Title"},
+    {"screen": const ScreenLog(), "title": "Screen B Title"}
   ];
 
   return PageRouteBuilder(
-    pageBuilder: (context, animation, secondaryAnimation) => _screens[index]["screen"],
+    pageBuilder: (context, animation, secondaryAnimation) =>
+        _screens[index]["screen"],
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       return child;
     },
@@ -175,19 +182,27 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _selectedScreenIndex = 0;
-  final List _screens = [
-    {"screen": const ScreenHome(), "title": "Screen A Title"},
-    {"screen": const ScreenAwards(), "title": "Screen B Title"}
+  static const List<Widget> _pages = <Widget>[
+    ScreenHome(),
+    ScreenAwards(),
+    ScreenLog()
+    // Camera page
+    // Chats page
   ];
+  var _currentTab = ScreenItem.home;
+  int _selectedScreenIndex = 0;
+  void _selectTab(int index) {
+    debugPrint("clicking on nav");
+    var vals = ScreenItem.values[index];
+    var route = screenRoute[vals];
+    debugPrint("screenItem $index $vals");
 
-  void _selectScreen(int index) {
-    Navigator.of(context).push(_createRoute(index));
     setState(() {
       _selectedScreenIndex = index;
     });
-
   }
+
+  final navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   Widget build(BuildContext context) {
@@ -198,17 +213,96 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-      body: ScreenHome(),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedScreenIndex,
-        onTap:_selectScreen,
-        items: [
-        BottomNavigationBarItem(
-            icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.star), label: 'Awards'),
-        BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Log'),
-      ],
+      body: PageTransitionSwitcher(
+        transitionBuilder: (child, primaryAnimation, secondaryAnimation) =>
+            FadeThroughTransition(
+                animation: primaryAnimation,
+                secondaryAnimation: secondaryAnimation,
+                child: child),
+        child: _pages[_selectedScreenIndex],
       ),
+      bottomNavigationBar: CurvedNavigationBar(
+        index: _selectedScreenIndex,
+        onTap: _selectTab,
+        color: Colors.black38,
+        backgroundColor: Theme.of(context).colorScheme.background,
+        buttonBackgroundColor: Theme.of(context).colorScheme.background,
+        items: [
+          Icon(Icons.home, size: 30.0, color: Colors.deepOrangeAccent),
+          Icon(Icons.star, size: 30.0, color: Colors.blueAccent),
+          Icon(Icons.list, size: 30.0, color: Colors.teal),
+        ],
+        animationDuration: Duration(milliseconds: 500),
+        animationCurve: Curves.easeOutCubic,
+        height: 60.0,
+      ),
+    );
+  }
+}
+
+class BottomNavigation extends StatelessWidget {
+  BottomNavigation({required this.currentTab, required this.onSelectTab});
+  final ScreenItem currentTab;
+  final ValueChanged<ScreenItem> onSelectTab;
+
+  @override
+  Widget build(BuildContext context) {
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      items: [_buildItem(ScreenItem.home), _buildItem(ScreenItem.awards)],
+      onTap: (index) => onSelectTab(
+        ScreenItem.values[index],
+      ),
+    );
+  }
+
+  BottomNavigationBarItem _buildItem(ScreenItem screenItem) {
+    return BottomNavigationBarItem(
+      icon: Icon(
+        Icons.layers,
+        color: _colorTabMatching(screenItem),
+      ),
+      label: screenName[screenItem],
+    );
+  }
+
+  Color? _colorTabMatching(ScreenItem item) {
+    return currentTab == item ? activeTabColor[item] : Colors.grey.shade50;
+  }
+}
+
+// 1
+class TabNavigatorRoutes {
+  static const String home = 'Home';
+  static const String awards = 'Awards';
+}
+
+// 2
+class TabNavigator extends StatelessWidget {
+  TabNavigator({required this.navigatorKey, required this.tabItem});
+  final GlobalKey<NavigatorState> navigatorKey;
+  final ScreenItem tabItem;
+
+  // 3
+  Map<String, WidgetBuilder> _routeBuilders(BuildContext context) {
+    return {
+      TabNavigatorRoutes.home: (context) => ScreenHome(),
+      TabNavigatorRoutes.awards: (context) => ScreenAwards()
+    };
+  }
+
+  // 4
+  @override
+  Widget build(BuildContext context) {
+    final routeBuilders = _routeBuilders(context);
+    return Navigator(
+      key: navigatorKey,
+      initialRoute: TabNavigatorRoutes.home,
+      onGenerateRoute: (routeSettings) {
+        return MaterialPageRoute(
+          builder: (context) => routeBuilders[routeSettings.name]!(context),
+        );
+      },
     );
   }
 }

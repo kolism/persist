@@ -26,45 +26,8 @@ class ScreenAwards extends StatelessWidget {
         // horizontal).
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Card(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                const ListTile(
-                  leading: Icon(Icons.warning_amber),
-                  title: Text(
-                    'WEEE',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24.0,
-                      color: Colors.red,
-                    ),
-                  ),
-                  subtitle: Text('0 days of active sprees tracked'),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: <Widget>[
-                    TextButton(
-                      child: const Text('START'),
-                      onPressed: () {
-
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    TextButton(
-                      child: const Text('VIEW LOG'),
-                      onPressed: () {
-
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
+          Text("Current Growth stage (33d)")
+         ]
       ),
     );
   }
