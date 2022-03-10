@@ -45,8 +45,8 @@ class WelcomePage extends StatelessWidget {
           //I'm using BackdropFilter for the blurring effect
           child: BackdropFilter(
             filter: ImageFilter.blur(
-              sigmaX: 20.0,
-              sigmaY: 20.0,
+              sigmaX: 10.0,
+              sigmaY: 10.0,
             ),
             child: Container(
               padding: const EdgeInsets.all(32.0),
