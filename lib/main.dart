@@ -1,7 +1,10 @@
 import 'dart:ui';
-
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
+
+import './screen_home.dart';
+import './screen_awards.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,8 +17,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      /*theme: ThemeData(
+        title: 'Flutter Demo',
+        /*theme: ThemeData(
           // This is the theme of your application.
           //
           // Try running your application with "flutter run". You'll see the
@@ -27,16 +30,46 @@ class MyApp extends StatelessWidget {
           // is not restarted.
           primarySwatch: Colors.blue,
           bottomAppBarColor: Colors.deepOrange),*/
-      theme: FlexThemeData.light(scheme: FlexScheme.hippieBlue),
-      darkTheme: FlexThemeData.dark(scheme: FlexScheme.hippieBlue),
-      themeMode: ThemeMode.dark,
-      home: const WelcomePage(),
-    );
+        theme: FlexThemeData.light(scheme: FlexScheme.hippieBlue),
+        darkTheme: FlexThemeData.dark(scheme: FlexScheme.hippieBlue),
+        themeMode: ThemeMode.dark,
+        home: WelcomePage());
   }
 }
 
-class WelcomePage extends StatelessWidget {
+class WelcomePage extends StatefulWidget {
   const WelcomePage({Key? key}) : super(key: key);
+
+  @override
+  State<WelcomePage> createState() => _WelcomePageState();
+}
+
+class _WelcomePageState extends State<WelcomePage> {
+  @override
+  void initState() {
+    _getWelcomeState();
+    super.initState();
+  }
+
+  void _setWelcomeState() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('WELCOME_PASS', true);
+  }
+
+  void _getWelcomeState() async {
+    final prefs = await SharedPreferences.getInstance();
+    bool? WELCOME_PASS = await prefs.getBool('WELCOME_PASS');
+    if (WELCOME_PASS == true) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const MyHomePage(
+            title: 'Dashboard',
+          ),
+        ),
+      );
+    }
+  }
 
   Widget _buildBottomNavigation(context) => Align(
         alignment: FractionalOffset.bottomCenter,
@@ -66,6 +99,7 @@ class WelcomePage extends StatelessWidget {
                     ),
                     onPressed: () {
                       debugPrint('Received click');
+                      _setWelcomeState();
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -115,17 +149,24 @@ class WelcomePage extends StatelessWidget {
   }
 }
 
+
+Route _createRoute(int index) {
+
+  final List _screens = [
+    {"screen": const ScreenHome(), "title": "Screen A Title"},
+    {"screen": const ScreenAwards(), "title": "Screen B Title"}
+  ];
+
+  return PageRouteBuilder(
+    pageBuilder: (context, animation, secondaryAnimation) => _screens[index]["screen"],
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return child;
+    },
+  );
+}
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
 
   final String title;
 
@@ -134,17 +175,18 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  int _selectedScreenIndex = 0;
+  final List _screens = [
+    {"screen": const ScreenHome(), "title": "Screen A Title"},
+    {"screen": const ScreenAwards(), "title": "Screen B Title"}
+  ];
 
-  void _incrementCounter() {
+  void _selectScreen(int index) {
+    Navigator.of(context).push(_createRoute(index));
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _selectedScreenIndex = index;
     });
+
   }
 
   @override
@@ -156,71 +198,16 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Card(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  const ListTile(
-                    leading: Icon(Icons.warning_amber),
-                    title: Text('Spree not active',style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 24.0,
-                        color: Colors.red,
-                    ),),
-                    subtitle:
-                        Text('0 days of active sprees tracked'),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: <Widget>[
-                      TextButton(
-                        child: const Text('START'),
-                        onPressed: () {/* ... */},
-                      ),
-                      const SizedBox(width: 8),
-                      TextButton(
-                        child: const Text('VIEW LOG'),
-                        onPressed: () {/* ... */},
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+      body: ScreenHome(),
       bottomNavigationBar: BottomNavigationBar(
-        items:[
-          BottomNavigationBarItem(icon: Icon(Icons.add_to_home_screen),
-                                  label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.star),
-              label: 'Awards'),
-          BottomNavigationBarItem(icon: Icon(Icons.list),
-              label: 'Log'),
-        ]
+        currentIndex: _selectedScreenIndex,
+        onTap:_selectScreen,
+        items: [
+        BottomNavigationBarItem(
+            icon: Icon(Icons.home), label: 'Home'),
+        BottomNavigationBarItem(icon: Icon(Icons.star), label: 'Awards'),
+        BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Log'),
+      ],
       ),
     );
   }
