@@ -4,7 +4,6 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
-import './ScreenItem.dart';
 import './screen_home.dart';
 import './screen_awards.dart';
 import './screen_log.dart';
@@ -20,27 +19,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Flutter Demo',
-        /*theme: ThemeData(
-          // This is the theme of your application.
-          //
-          // Try running your application with "flutter run". You'll see the
-          // application has a blue toolbar. Then, without quitting the app, try
-          // changing the primarySwatch below to Colors.green and then invoke
-          // "hot reload" (press "r" in the console where you ran "flutter run",
-          // or simply save your changes to "hot reload" in a Flutter IDE).
-          // Notice that the counter didn't reset back to zero; the application
-          // is not restarted.
-          primarySwatch: Colors.blue,
-          bottomAppBarColor: Colors.deepOrange),*/
-        theme: FlexThemeData.light(scheme: FlexScheme.hippieBlue),
-        darkTheme: FlexThemeData.dark(scheme: FlexScheme.material),
-        themeMode: ThemeMode.dark,
-        home: WelcomePage(),
-        routes: {
-          '/home': (BuildContext context) => ScreenHome(),
-          '/awards': (BuildContext context) => ScreenAwards()
-        });
+      title: 'Flutter Demo',
+      theme: FlexThemeData.light(scheme: FlexScheme.hippieBlue),
+      darkTheme: FlexThemeData.dark(scheme: FlexScheme.material),
+      themeMode: ThemeMode.dark,
+      home: WelcomePage(),
+    );
   }
 }
 
@@ -145,7 +129,7 @@ class _WelcomePageState extends State<WelcomePage> {
                 style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 48.0,
-                    color: Colors.red),
+                    color: Colors.deepOrange),
               ),
             ),
             _buildBottomNavigation(context)
@@ -154,22 +138,6 @@ class _WelcomePageState extends State<WelcomePage> {
       ),
     );
   }
-}
-
-Route _createRoute(int index) {
-  final List _screens = [
-    {"screen": const ScreenHome(), "title": "Screen A Title"},
-    {"screen": const ScreenAwards(), "title": "Screen B Title"},
-    {"screen": const ScreenLog(), "title": "Screen B Title"}
-  ];
-
-  return PageRouteBuilder(
-    pageBuilder: (context, animation, secondaryAnimation) =>
-        _screens[index]["screen"],
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return child;
-    },
-  );
 }
 
 class MyHomePage extends StatefulWidget {
@@ -186,17 +154,10 @@ class _MyHomePageState extends State<MyHomePage> {
     ScreenHome(),
     ScreenAwards(),
     ScreenLog()
-    // Camera page
-    // Chats page
   ];
-  var _currentTab = ScreenItem.home;
+
   int _selectedScreenIndex = 0;
   void _selectTab(int index) {
-    debugPrint("clicking on nav");
-    var vals = ScreenItem.values[index];
-    var route = screenRoute[vals];
-    debugPrint("screenItem $index $vals");
-
     setState(() {
       _selectedScreenIndex = index;
     });
@@ -206,12 +167,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       body: PageTransitionSwitcher(
         transitionBuilder: (child, primaryAnimation, secondaryAnimation) =>
@@ -226,83 +181,16 @@ class _MyHomePageState extends State<MyHomePage> {
         onTap: _selectTab,
         color: Colors.black38,
         backgroundColor: Theme.of(context).colorScheme.background,
-        buttonBackgroundColor: Theme.of(context).colorScheme.background,
+        buttonBackgroundColor: Theme.of(context).colorScheme.secondary,
         items: [
-          Icon(Icons.home, size: 30.0, color: Colors.deepOrangeAccent),
-          Icon(Icons.star, size: 30.0, color: Colors.blueAccent),
-          Icon(Icons.list, size: 30.0, color: Colors.teal),
+          Icon(Icons.home, size: 30.0, color: Colors.white),
+          Icon(Icons.star, size: 30.0, color: Colors.white),
+          Icon(Icons.list, size: 30.0, color: Colors.white),
         ],
         animationDuration: Duration(milliseconds: 500),
         animationCurve: Curves.easeOutCubic,
         height: 60.0,
       ),
-    );
-  }
-}
-
-class BottomNavigation extends StatelessWidget {
-  BottomNavigation({required this.currentTab, required this.onSelectTab});
-  final ScreenItem currentTab;
-  final ValueChanged<ScreenItem> onSelectTab;
-
-  @override
-  Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      items: [_buildItem(ScreenItem.home), _buildItem(ScreenItem.awards)],
-      onTap: (index) => onSelectTab(
-        ScreenItem.values[index],
-      ),
-    );
-  }
-
-  BottomNavigationBarItem _buildItem(ScreenItem screenItem) {
-    return BottomNavigationBarItem(
-      icon: Icon(
-        Icons.layers,
-        color: _colorTabMatching(screenItem),
-      ),
-      label: screenName[screenItem],
-    );
-  }
-
-  Color? _colorTabMatching(ScreenItem item) {
-    return currentTab == item ? activeTabColor[item] : Colors.grey.shade50;
-  }
-}
-
-// 1
-class TabNavigatorRoutes {
-  static const String home = 'Home';
-  static const String awards = 'Awards';
-}
-
-// 2
-class TabNavigator extends StatelessWidget {
-  TabNavigator({required this.navigatorKey, required this.tabItem});
-  final GlobalKey<NavigatorState> navigatorKey;
-  final ScreenItem tabItem;
-
-  // 3
-  Map<String, WidgetBuilder> _routeBuilders(BuildContext context) {
-    return {
-      TabNavigatorRoutes.home: (context) => ScreenHome(),
-      TabNavigatorRoutes.awards: (context) => ScreenAwards()
-    };
-  }
-
-  // 4
-  @override
-  Widget build(BuildContext context) {
-    final routeBuilders = _routeBuilders(context);
-    return Navigator(
-      key: navigatorKey,
-      initialRoute: TabNavigatorRoutes.home,
-      onGenerateRoute: (routeSettings) {
-        return MaterialPageRoute(
-          builder: (context) => routeBuilders[routeSettings.name]!(context),
-        );
-      },
     );
   }
 }
