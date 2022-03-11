@@ -14,7 +14,7 @@ class RootedStatus extends StatefulWidget {
 class _RootedStatusState extends State<RootedStatus> {
   bool _isRooted = false;
   String _humanSpree = "";
-
+  late Timer _timer;
 
   format(Duration d) => d.toString().split('.').first.padLeft(8, "0");
   String formatHHMMSS(int seconds) {
@@ -69,17 +69,16 @@ class _RootedStatusState extends State<RootedStatus> {
   }
 
   void _startTimer() {
-    debugPrint("starting timer");
-    Timer.periodic(const Duration(seconds: 1), (Timer timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       if (!_isRooted) {
         timer.cancel();
       }
-      debugPrint("timer tick");
       _updateRootedTime();
     });
   }
 
   Future<void> _handleRootedState() async {
+    await _setRootedEphemeralState();
     debugPrint("User is rooted? $_isRooted");
     if (_isRooted) {
       _updateRootedTime();
@@ -92,7 +91,6 @@ class _RootedStatusState extends State<RootedStatus> {
     await prefs.setBool('IS_ROOTED', rooted);
     await prefs.setInt(
         'SPREE_START_TIME', DateTime.now().millisecondsSinceEpoch);
-    await _setRootedEphemeralState();
   }
 
   Future<void> _handleCheckIn() async {
@@ -114,7 +112,11 @@ class _RootedStatusState extends State<RootedStatus> {
 
   @override
   void dispose() {
-
+    try {
+      _timer.cancel();
+    } on Exception catch (e) {
+      debugPrint("E $e");
+    }
     super.dispose();
   }
 

@@ -85,7 +85,7 @@ class _ScreenAwardsState extends State<ScreenAwards> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
 
-          LTree(totalNodes: _totalNodes, context: context),
+          LTree(totalNodes: _totalNodes > 20000? 20000: _totalNodes, context: context),
 
           Text("Current Growth: $_totalNodes"),
          ]
