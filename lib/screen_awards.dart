@@ -11,7 +11,6 @@ class ScreenAwards extends StatefulWidget {
 }
 
 class _ScreenAwardsState extends State<ScreenAwards> {
-  int _totalMinutesElapsed = 0;
   bool _isRooted = false;
   int _totalNodes = 0;
 
@@ -45,7 +44,6 @@ class _ScreenAwardsState extends State<ScreenAwards> {
 
     setState(() {
       _totalNodes = minutes;
-      _totalMinutesElapsed = minutes;
     });
   }
 
@@ -85,7 +83,7 @@ class _ScreenAwardsState extends State<ScreenAwards> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
 
-          LTree(totalNodes: _totalNodes > 20000? 20000: _totalNodes, context: context),
+          LTree(totalNodes: _totalNodes > 10000? 10000: _totalNodes, context: context),
 
           Text("Current Growth: $_totalNodes"),
          ]

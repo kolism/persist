@@ -22,9 +22,9 @@ class _RootedStatusState extends State<RootedStatus> {
 
     debugPrint("Seconds ${seconds}");
     if (seconds != null && seconds != 0) {
-      int months = (seconds / (3600 * 30 * 24)).truncate();
-      int days = (seconds / (3600 * 24)).truncate();
-      int hours = (seconds / 3600).truncate();
+      int months = ((seconds % 31536000) / 2628000).truncate();
+      int days = (((seconds % 31536000) % 2628000) / 86400).truncate();
+      int hours = ((seconds % (3600 * 24)) / 3600).truncate() ;
       seconds = (seconds % 3600).truncate();
       int minutes = (seconds / 60).truncate();
 
@@ -39,14 +39,17 @@ class _RootedStatusState extends State<RootedStatus> {
       } else if (days == 0 && months == 0) {
         return "$hoursStr\h $minutesStr\m $secondsStr\s";
       } else if (months == 0) {
-        return "$daysStr\d $hoursStr\h $minutesStr\m $secondsStr\s";
+        return "$daysStr\d $hoursStr\h $minutesStr\m";
       } else {
-        return "$monthsStr\mo $daysStr\d $hoursStr\h $minutesStr\m $secondsStr\s";
+        return "$monthsStr\mo $daysStr\d $hoursStr\h";
       }
     } else {
       return "0m 0s";
     }
   }
+
+
+
 
   Future<void> _setRootedEphemeralState() async {
     final prefs = await SharedPreferences.getInstance();
@@ -121,9 +124,12 @@ class _RootedStatusState extends State<RootedStatus> {
   }
 
   Widget _ActiveCard() => Card(
+        color: Colors.blueAccent.shade400,
+
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
+            const SizedBox(height: 14),
             ListTile(
               leading: Icon(Icons.cake,
                   size: 90.0, color: Theme.of(context).colorScheme.primary),
@@ -131,7 +137,7 @@ class _RootedStatusState extends State<RootedStatus> {
                 '$_humanSpree',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 40.0,
+                  fontSize: 35.0,
                   color: Theme.of(context).colorScheme.secondary,
                 ),
               ),
@@ -149,6 +155,7 @@ class _RootedStatusState extends State<RootedStatus> {
                 const SizedBox(width: 8),
               ],
             ),
+            const SizedBox(height: 8),
           ],
         ),
       );
@@ -157,6 +164,7 @@ class _RootedStatusState extends State<RootedStatus> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
+            const SizedBox(height: 14),
             ListTile(
               leading:
                   Icon(Icons.warning_amber, size: 90.0, color: Colors.grey),
@@ -187,6 +195,7 @@ class _RootedStatusState extends State<RootedStatus> {
                 const SizedBox(width: 8),
               ],
             ),
+            const SizedBox(height: 8),
           ],
         ),
       );
