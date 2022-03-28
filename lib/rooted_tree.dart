@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import './CanvasPaint.dart';
+import 'graphist/graphist.dart';
+import './rooted_tree_viewer.dart';
 
-class LTree extends StatefulWidget {
+
+class LTree extends StatefulWidget  {
   const LTree({Key? key, required this.totalNodes, required this.context}) : super(key: key);
   final int totalNodes;
   final BuildContext context;
@@ -12,10 +14,8 @@ class LTree extends StatefulWidget {
 class _LTreeState extends State<LTree> {
   Widget _buildImage() {
 
-    return new CustomPaint(
-      size:Size(MediaQuery.maybeOf(context)!.size.width,MediaQuery.maybeOf(context)!.size.height - 100),
-      painter: new CanvasPaint(totalNodes: widget.totalNodes, context: widget.context),
-
+    return RootedTreeViewer(
+      graphistElem: ExampleTree(),
     );
 
   }
@@ -27,3 +27,16 @@ class _LTreeState extends State<LTree> {
     );
   }
 }
+
+
+class ExampleTree extends Graphist {
+  @override
+  void u(double t) {
+    c.drawCircle(
+      Offset(x.width / 2, x.height / 2),
+      S(t).abs() * x.height / 4 + 42,
+      Paint()..color = R(C(t) * 255, 42, 60 + T(t)),
+    );
+  }
+}
+
