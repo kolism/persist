@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'graphist/graphist.dart';
+import '../../graphist/graphist.dart';
 
 
 class RootedTreeViewer extends StatefulWidget {

@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import './screen_home.dart';
-import './screen_awards.dart';
+import './views/screen_progress.dart';
 import './screen_log.dart';
 
 void main() {

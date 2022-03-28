@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RootedStatus extends StatefulWidget {
@@ -14,6 +15,7 @@ class RootedStatus extends StatefulWidget {
 class _RootedStatusState extends State<RootedStatus> {
   bool _isRooted = false;
   String _humanSpree = "";
+  String _goalText = "";
   late Timer _timer;
 
   format(Duration d) => d.toString().split('.').first.padLeft(8, "0");
@@ -24,7 +26,7 @@ class _RootedStatusState extends State<RootedStatus> {
     if (seconds != null && seconds != 0) {
       int months = ((seconds % 31536000) / 2628000).truncate();
       int days = (((seconds % 31536000) % 2628000) / 86400).truncate();
-      int hours = ((seconds % (3600 * 24)) / 3600).truncate() ;
+      int hours = ((seconds % (3600 * 24)) / 3600).truncate();
       seconds = (seconds % 3600).truncate();
       int minutes = (seconds / 60).truncate();
 
@@ -48,14 +50,16 @@ class _RootedStatusState extends State<RootedStatus> {
     }
   }
 
-
-
-
   Future<void> _setRootedEphemeralState() async {
     final prefs = await SharedPreferences.getInstance();
     bool? IS_ROOTED = await prefs.getBool('IS_ROOTED');
+
+
+    String? GOAL_TEXT = await prefs.getString('SPREE_GOAL');
+
     setState(() {
       _isRooted = IS_ROOTED!;
+      _goalText = GOAL_TEXT!;
     });
   }
 
@@ -89,20 +93,97 @@ class _RootedStatusState extends State<RootedStatus> {
     }
   }
 
-  Future<void> _setRootedSPState(bool rooted) async {
+  Future<void> _setRootedSPState(bool rooted,String? goalText) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('IS_ROOTED', rooted);
     await prefs.setInt(
         'SPREE_START_TIME', DateTime.now().millisecondsSinceEpoch);
+    await prefs.setString(("SPREE_GOAL"), goalText!);
   }
 
   Future<void> _handleCheckIn() async {
-    await _setRootedSPState(false);
+    await _setRootedSPState(false, "");
     _handleRootedState();
   }
 
   Future<void> _handleStart() async {
-    await _setRootedSPState(true);
+    TextEditingController My_controller1 = new TextEditingController();
+    var alert = AlertDialog(
+      title: Text("What is your goal?"),
+      content: Column(mainAxisSize: MainAxisSize.min, children: [
+        TextField(
+          maxLengthEnforcement: MaxLengthEnforcement.enforced,
+          maxLength: 50,
+          style: TextStyle(decoration: TextDecoration.none),
+          maxLines: 1,
+
+          autofocus: false,
+          enabled: true,
+          onSubmitted: (String text) {
+
+            // Do something with your number like pass it to the next material page route
+          },
+          controller:My_controller1,
+          decoration: new InputDecoration(
+            errorStyle: TextStyle(color: Colors.redAccent),
+            border: new UnderlineInputBorder(
+              borderSide: BorderSide(
+                color: Color.fromRGBO(40, 40, 40, 1.0),
+              ),
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(
+                color: Color.fromRGBO(40, 40, 40, 1.0),
+              ),
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            disabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(
+                color: Color.fromRGBO(40, 40, 40, 1.0),
+              ),
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            prefixIcon: new Icon(
+              Icons.star,
+              size: 18.0,
+            ),
+          ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: <Widget>[
+            TextButton(
+              child: const Text('START'),
+              onPressed: () {
+                String text = My_controller1.text;
+                debugPrint("My_controller1 $text");
+                startTracking(text);
+                Navigator.pop(context);
+              },
+            ),
+            const SizedBox(width: 8),
+            TextButton(
+              child: const Text('CANCEL'),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            )
+          ],
+        ),
+      ]),
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return alert;
+      },
+    );
+  }
+
+  Future<void> startTracking(String goalText) async {
+    await _setRootedSPState(true,goalText);
     _handleRootedState();
   }
 
@@ -125,7 +206,6 @@ class _RootedStatusState extends State<RootedStatus> {
 
   Widget _ActiveCard() => Card(
         color: Colors.blueAccent.shade400,
-
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
@@ -203,13 +283,9 @@ class _RootedStatusState extends State<RootedStatus> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: PageTransitionSwitcher(
-        transitionBuilder: (child, primaryAnimation, secondaryAnimation) =>
-            FadeThroughTransition(
-                animation: primaryAnimation,
-                secondaryAnimation: secondaryAnimation,
-                child: child),
-        child: _isRooted ? _ActiveCard() : _InactiveCard(),
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        children:[ Text("$_goalText"),_isRooted ? _ActiveCard() : _InactiveCard(),]
       ),
     );
   }

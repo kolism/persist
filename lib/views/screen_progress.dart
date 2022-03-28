@@ -1,7 +1,7 @@
 // screen_a.dart
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import './rooted_tree.dart';
+import 'progress/rooted_tree.dart';
 
 class ScreenAwards extends StatefulWidget {
   const ScreenAwards({Key? key}) : super(key: key);
@@ -62,10 +62,6 @@ class _ScreenAwardsState extends State<ScreenAwards> {
 
   @override
   Widget build(BuildContext context) {
-    return LTree(totalNodes: _totalNodes > 10000? 10000: _totalNodes, context: context);
-
-
-
-
+    return LTree(totalNodes: _totalNodes, context: context);
   }
 }
